@@ -11,6 +11,12 @@ import urllib
 #unzip file
 import zipfile
 
+#folder with movies in it - passed as argument
+rootdir = argv[1]
+
+#add more...
+video_formats = ['mkv','mp4','avi']
+
 #generates the hash of the file - got it from opensubtitles - thanks
 def hashFile(name): 
       try: 
@@ -65,46 +71,45 @@ SubLanguageID = 'eng'
 # Connection to opensubtitles.org server
 session = server.LogIn('', '', 'en', 'subloader')
 
-#folder with movies in it
-rootdir = "/home/username/Breaking Bad/"
-
 #get the filenames with path
 FileNameList = getFileNames(rootdir)
 
 for filename, subdir in FileNameList.iteritems():
-    
-    FullPath = subdir + "/" + filename
+    if filename.endswith(tuple(video_formats)):
+        # file has a vide_formats ending  
+        
+        FullPath = subdir + filename
 
-    print FullPath
+        print FullPath
 
-    # get video info
-    videoHash = hashFile(FullPath)
-    videoSize = os.path.getsize(FullPath)
+        # get video info
+        videoHash = hashFile(FullPath)
+        videoSize = os.path.getsize(FullPath)
 
-    #creates and "resets" the list
-    searchList = []
-    searchList.append({'sublanguageid':SubLanguageID, 'moviehash':videoHash, 'moviebytesize':str(videoSize)})
-    searchList.append({'sublanguageid':SubLanguageID, 'query':filename})
+        #creates and "resets" the list
+        searchList = []
+        searchList.append({'sublanguageid':SubLanguageID, 'moviehash':videoHash, 'moviebytesize':str(videoSize)})
+        searchList.append({'sublanguageid':SubLanguageID, 'query':filename})
 
-    subtitlesList = server.SearchSubtitles(session['token'], searchList)
+        subtitlesList = server.SearchSubtitles(session['token'], searchList)
 
-    #print subtitlesList['data'][0]['MatchedBy']  # --> moviehash
+        #print subtitlesList['data'][0]['MatchedBy']  # --> moviehash
 
-    #FileUrl = subtitlesList['data'][0]['SubDownloadLink'] --> .gz
-    FileUrl = subtitlesList['data'][0]['ZipDownloadLink'] # --> zip
+        #FileUrl = subtitlesList['data'][0]['SubDownloadLink'] --> .gz
+        FileUrl = subtitlesList['data'][0]['ZipDownloadLink'] # --> zip
 
-    #.srt name
-    SubFileName = subtitlesList['data'][0]['SubFileName']
-    SubFileNameZip = SubFileName + '.zip'
+        #.srt name
+        SubFileName = subtitlesList['data'][0]['SubFileName']
+        SubFileNameZip = SubFileName + '.zip'
 
-    #download & unzip it
-    myZipFile = urllib.urlretrieve(FileUrl,subdir + SubFileNameZip)
-    fh = open(subdir + SubFileNameZip, 'rb')
-    zipfile.ZipFile(fh).extract(SubFileName,subdir)
-    fh.close()
+        #download & unzip it
+        myZipFile = urllib.urlretrieve(FileUrl,subdir + SubFileNameZip)
+        fh = open(subdir + SubFileNameZip, 'rb')
+        zipfile.ZipFile(fh).extract(SubFileName,subdir)
+        fh.close()
 
-    #rename as file + .srt
-    os.rename(subdir + "/" + SubFileName,FullPath +".srt")
+        #rename as file + .srt
+        os.rename(subdir + SubFileName,FullPath +".srt")
 
-    #remove .zip file
-    os.remove(subdir + SubFileNameZip)
+        #remove .zip file
+        os.remove(subdir + SubFileNameZip)
