@@ -78,7 +78,7 @@ for filename, subdir in FileNameList.iteritems():
     if filename.endswith(tuple(video_formats)):
         # file has a vide_formats ending  
         
-        FullPath = subdir + filename
+        FullPath = subdir + "/" + filename
 
         print FullPath
 
@@ -109,7 +109,7 @@ for filename, subdir in FileNameList.iteritems():
         fh.close()
 
         #rename as file + .srt
-        os.rename(subdir + SubFileName,FullPath +".srt")
+        os.rename(subdir + "/" + SubFileName,FullPath +".srt")
 
         #remove .zip file
         os.remove(subdir + SubFileNameZip)
